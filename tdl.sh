@@ -70,7 +70,6 @@ menu() {
 		echo "Enter task number"
 		read tnumber
 		tlines=$(wc -l < "$filename")
-		echo "$tlines"
 		if [ "$tlines" -ge 0 ] && [ "$tnumber" -le "$tlines" ]; then
 			nvim "+$tnumber" "$filename"
 		else
@@ -88,6 +87,7 @@ while true; do
 	# do I *need* this to be a function? no. I made it that for "maintainability" even though I know damn well I will just ignore this and pretend it's while true; do the menu instead of the function
 done
 
-exit 0
+exit 1
 
 # added this recently so I can be a professional super programmer that follows good practice of adding exit codes :)
+# I forgot it only runs the exit if it fails... as you exit with option 4 in the menu. So it's now exit 1 rather than exit 0
