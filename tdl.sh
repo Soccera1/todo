@@ -25,6 +25,7 @@ if [ "$exists" = "false" ]; then
 		echo "File created!"
 	else
 		echo "File creation failed! (code $ec0)"
+		exit 1
 	fi
 	unset ec0
 fi
@@ -41,7 +42,7 @@ menu() {
 	read task
 
 	if [ "$task" = 4 ]; then
-		exit
+		exit 0
 	else
 		todo="$task"
 	fi
@@ -73,3 +74,5 @@ menu() {
 while true; do
 	menu
 done
+
+exit 0
