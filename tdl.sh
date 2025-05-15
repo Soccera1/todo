@@ -3,7 +3,7 @@
 # this bit just assigns some variables that are later used to help with setting up the name of the file
 
 pattern="To Do List"
-filename=$(echo *"$pattern"*)
+filename=$(find . -maxdepth 1 -type f -name "*$pattern*" | head -n 1)
 
 # this bit assigns whether or not the file already exists
 
@@ -36,7 +36,7 @@ if [ "$exists" = "false" ]; then
 	unset ec0
 fi
 
-filename=$(echo *"$pattern")
+filename=$(find . -maxdepth 1 -type f -name "*$pattern*" | head -n 1)
 
 # the megamenu
 
@@ -49,7 +49,7 @@ menu() {
 
 	read task
 
-	if [ "$task" = 4 ]; then
+	if [ "$task" -eq 4 ]; then
 		exit 0
 	else
 		todo="$task"
@@ -70,8 +70,14 @@ menu() {
 		echo "Enter task number"
 		read tnumber
 		tlines=$(wc -l < "$filename")
-		if [ "$tlines" -ge 0 ] && [ "$tnumber" -le "$tlines" ]; then
-			nvim "+$tnumber" "$filename"
+		if [ "$tnumber" -ge 1 ] && [ "$tnumber" -le "$tlines" ]; then
+			if command -v nvim &> /dev/null; then
+				nvim "+$tnumber" "$filename"
+			elif command -v vi &> /dev/null; then
+				vi "+$tnumber" "$filename"
+			else
+				echo "No suitable editor found. Please install 'nvim' or 'vi'."
+			fi
 		else
 			echo -e "\nEnter a valid task number\nValid tasks are between 1 and $tlines\n"
 		fi
@@ -81,10 +87,11 @@ menu() {
 
 	fi
 }
-
+# The following loop should never exit under normal conditions,
+# but if it does, exit with code 1 to indicate a clean exit.
 while true; do
 	menu
-	# do I *need* this to be a function? no. I made it that for "maintainability" even though I know damn well I will just ignore this and pretend it's while true; do the menu instead of the function
+	# Loop to repeatedly display the menu
 done
 
 exit 1
