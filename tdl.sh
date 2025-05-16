@@ -51,7 +51,8 @@ menu() {
 	echo "1. Add task"
 	echo "2. View tasks"
 	echo "3. Edit task list"
-	echo "4. Exit"
+	echo "4. Delete task"
+	echo "5. Exit"
 
 	read task
 
@@ -99,6 +100,17 @@ menu() {
 			fi
 			;;
 		4)
+			echo "Enter task number to delete:"
+			read delnum
+			tlines=$(wc -l < "$filename")
+			if [[ "$delnum" =~ ^[0-9]+$ ]] && [ "$delnum" -ge 1 ] && [ "$delnum" -le "$tlines" ]; then
+				sed -i "${delnum}d" "$filename"
+				echo "Task $delnum deleted."
+			else
+				echo -e "\nEnter a valid task number\nValid tasks are between 1 and $tlines\n"
+			fi
+			;;
+		5)
 			exit 0
 			;;
 		*)
