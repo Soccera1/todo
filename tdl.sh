@@ -75,18 +75,24 @@ menu() {
 			read tnumber
 			tlines=$(wc -l < "$filename")
 			if [[ "$tnumber" =~ ^[0-9]+$ ]] && [ "$tnumber" -ge 1 ] && [ "$tnumber" -le "$tlines" ]; then
-				if command -v nvim &> /dev/null; then
+				if [[ -n "$VISUAL" ]] && command -v "$VISUAL" &> /dev/null; then
+					"$VISUAL" "+$tnumber" "$filename"
+				elif command -v nvim &> /dev/null; then
 					nvim "+$tnumber" "$filename"
 				elif command -v emacs &> /dev/null; then
 					emacs +$tnumber "$filename"
 				elif command -v nano &> /dev/null; then
 					nano +$tnumber "$filename"
+				elif [[ -n "$ex" && "$ex" -eq 0 ]] && command -v ex &> /dev/null; then
+					ex "+$tnumber" "$filename"
 				elif command -v vi &> /dev/null; then
 					vi "+$tnumber" "$filename"
+				elif [[ -n "$EDITOR" ]] && command -v "$EDITOR" &> /dev/null; then
+					"$EDITOR" "+$tnumber" "$filename"
 				elif command -v ed &> /dev/null; then
 					ed "$filename"
 				else
-					echo "No suitable editor found. Please install 'nvim', 'emacs', 'nano', 'vi', or 'ed'."
+					echo "No suitable editor found. Please set $VISUAL or $EDITOR, or install 'nvim', 'emacs', 'nano', 'ex', 'vi', or 'ed'."
 				fi
 			else
 				echo -e "\nEnter a valid task number\nValid tasks are between 1 and $tlines\n"
