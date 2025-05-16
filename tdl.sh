@@ -7,7 +7,7 @@ filename=$(find . -maxdepth 1 -type f -name "*$pattern*" | head -n 1)
 
 # this bit assigns whether or not the file already exists
 
-if [[ -e "$filename" ]]; then
+if [[ -n "$filename" && -e "$filename" ]]; then
 	exists=true
 else
 	exists=false
@@ -18,6 +18,10 @@ fi
 if [ "$exists" = "false" ]; then
 	echo "What is your name?"
 	read name
+	if [[ -z "$name" ]]; then
+		echo "Name cannot be empty. Exiting."
+		exit 1
+	fi
 	if [[ "${name: -1}" == "s" ]]; then
 		possessive="${name}'"
 	else
@@ -25,7 +29,8 @@ if [ "$exists" = "false" ]; then
 	fi
 	unset exists
 
-	touch "$possessive To Do List"
+	filename="$possessive To Do List"
+	touch "$filename"
 	ec0="$?"
 	if [ "$ec0" = 0 ]; then
 		echo "File created!"
@@ -36,6 +41,7 @@ if [ "$exists" = "false" ]; then
 	unset ec0
 fi
 
+# Recalculate filename in case it was just created
 filename=$(find . -maxdepth 1 -type f -name "*$pattern*" | head -n 1)
 
 # the megamenu
@@ -49,43 +55,44 @@ menu() {
 
 	read task
 
-	if [ "$task" -eq 4 ]; then
-		exit 0
-	else
-		todo="$task"
-	fi
-	unset task
-
-	# I might remove the unset at some point and just use a different variable name lmk if you have any ideas for a good variable name so I don't have to unset it
-
-	if [ "$todo" = 1 ]; then
-		echo "Enter name of task"
-		read task
-		echo "$task" >> "$filename"
-	elif [ "$todo" = 2 ]; then
-		echo ""
-		cat "$filename"
-		echo ""
-	elif [ "$todo" = 3 ]; then
-		echo "Enter task number"
-		read tnumber
-		tlines=$(wc -l < "$filename")
-		if [ "$tnumber" -ge 1 ] && [ "$tnumber" -le "$tlines" ]; then
-			if command -v nvim &> /dev/null; then
-				nvim "+$tnumber" "$filename"
-			elif command -v vi &> /dev/null; then
-				vi "+$tnumber" "$filename"
+	case "$task" in
+		1)
+			echo "Enter name of task"
+			read newtask
+			if [[ -z "$newtask" ]]; then
+				echo "Task cannot be empty."
 			else
-				echo "No suitable editor found. Please install 'nvim' or 'vi'."
+				echo "$newtask" >> "$filename"
 			fi
-		else
-			echo -e "\nEnter a valid task number\nValid tasks are between 1 and $tlines\n"
-		fi
-	else
-		echo -e "\e[1;31m\n$todo is an invalid option!\nPlease enter a valid option\n\e[0m"
-		# oh what a mess ANSI escape codes are
-
-	fi
+			;;
+		2)
+			echo ""
+			cat "$filename"
+			echo ""
+			;;
+		3)
+			echo "Enter task number"
+			read tnumber
+			tlines=$(wc -l < "$filename")
+			if [[ "$tnumber" =~ ^[0-9]+$ ]] && [ "$tnumber" -ge 1 ] && [ "$tnumber" -le "$tlines" ]; then
+				if command -v nvim &> /dev/null; then
+					nvim "+$tnumber" "$filename"
+				elif command -v vi &> /dev/null; then
+					vi "+$tnumber" "$filename"
+				else
+					echo "No suitable editor found. Please install 'nvim' or 'vi'."
+				fi
+			else
+				echo -e "\nEnter a valid task number\nValid tasks are between 1 and $tlines\n"
+			fi
+			;;
+		4)
+			exit 0
+			;;
+		*)
+			echo -e "\e[1;31m\n$task is an invalid option!\nPlease enter a valid option\n\e[0m"
+			;;
+	 esac
 }
 # The following loop should never exit under normal conditions,
 # but if it does, exit with code 1 to indicate a clean exit.
@@ -94,7 +101,7 @@ while true; do
 	# Loop to repeatedly display the menu
 done
 
-exit 1
+exit 0
 
 # added this recently so I can be a professional super programmer that follows good practice of adding exit codes :)
 # I forgot it only runs the exit if it fails... as you exit with option 4 in the menu. So it's now exit 1 rather than exit 0
