@@ -77,10 +77,16 @@ menu() {
 			if [[ "$tnumber" =~ ^[0-9]+$ ]] && [ "$tnumber" -ge 1 ] && [ "$tnumber" -le "$tlines" ]; then
 				if command -v nvim &> /dev/null; then
 					nvim "+$tnumber" "$filename"
+				elif command -v emacs &> /dev/null; then
+					emacs +$tnumber "$filename"
+				elif command -v nano &> /dev/null; then
+					nano +$tnumber "$filename"
 				elif command -v vi &> /dev/null; then
 					vi "+$tnumber" "$filename"
+				elif command -v ed &> /dev/null; then
+					ed "$filename"
 				else
-					echo "No suitable editor found. Please install 'nvim' or 'vi'."
+					echo "No suitable editor found. Please install 'nvim', 'emacs', 'nano', 'vi', or 'ed'."
 				fi
 			else
 				echo -e "\nEnter a valid task number\nValid tasks are between 1 and $tlines\n"
