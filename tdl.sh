@@ -125,7 +125,7 @@ while true; do
 	# Loop to repeatedly display the menu
 done
 
-exit 0
+exit 1
 
 # added this recently so I can be a professional super programmer that follows good practice of adding exit codes :)
 # I forgot it only runs the exit if it fails... as you exit with option 4 in the menu. So it's now exit 1 rather than exit 0
